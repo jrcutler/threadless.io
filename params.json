@@ -1,0 +1,6 @@
+{
+  "name": "threadless.io",
+  "tagline": "Concurrent I/O without threads",
+  "body": "`threadless.io` will present multiple mechanisms to perform I/O operations concurrently without threads. Eventually, this will include the following:\r\n* Event loops\r\n * `select`\r\n * `epoll`\r\n * `kqueue`\r\n* Asynchronous callback-based I/O\r\n* Psuedo-blocking I/O with coroutines\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
