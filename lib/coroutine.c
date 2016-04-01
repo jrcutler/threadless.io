@@ -10,7 +10,7 @@
 #include <sys/mman.h>
 /* ucontext_t, getcontext, makecontext, swapcontext */
 #include <ucontext.h>
-/*sysconf, _SC_PAGE_SIZE */
+/* sysconf, _SC_PAGE_SIZE */
 #include <unistd.h>
 
 /* ... */
