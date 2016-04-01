@@ -62,9 +62,8 @@ static int run(void)
         goto fail;
     }
 
-    void *data;
-
     while (!(coroutine_ended(fibonacci) || coroutine_ended(output))) {
+        void *data;
         data = coroutine_resume(fibonacci, NULL);
         data = coroutine_resume(output, data);
     }
