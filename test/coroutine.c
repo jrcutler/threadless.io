@@ -13,7 +13,7 @@
 #include <threadless/coroutine.h>
 
 
-static void *fibonacci_generator(coroutine *coro, void *data)
+static void *fibonacci_generator(coroutine_t *coro, void *data)
 {
     size_t x = 0;
     size_t y = 1;
@@ -37,7 +37,7 @@ static void *fibonacci_generator(coroutine *coro, void *data)
 }
 
 
-static void *output_coroutine(coroutine *coro, void *data)
+static void *output_coroutine(coroutine_t *coro, void *data)
 {
     size_t *value = data;
 
@@ -53,8 +53,8 @@ static void *output_coroutine(coroutine *coro, void *data)
 static int run(void)
 {
     int error = -1;
-    coroutine *fibonacci = NULL;
-    coroutine *output = NULL;
+    coroutine_t *fibonacci = NULL;
+    coroutine_t *output = NULL;
 
     fibonacci = coroutine_create(fibonacci_generator, 1);
     if (NULL == fibonacci) {

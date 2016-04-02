@@ -36,9 +36,10 @@ struct coroutine {
 };
 
 
-static void coroutine_entry_point(coroutine *, coroutine_function *)
+static void coroutine_entry_point(coroutine_t *, coroutine_function_t *)
     __attribute__ ((noreturn));
-static void coroutine_entry_point(coroutine *c, coroutine_function *function)
+static void coroutine_entry_point(coroutine_t *c,
+    coroutine_function_t *function)
 {
     /* run function until it returns */
     void *retval = function(c, c->data);
@@ -53,7 +54,7 @@ static void coroutine_entry_point(coroutine *c, coroutine_function *function)
 }
 
 
-static int stack_allocate(coroutine *coro, size_t stack_pages)
+static int stack_allocate(coroutine_t *coro, size_t stack_pages)
 {
     int error = -1;
     size_t page_size = sysconf(_SC_PAGE_SIZE);
@@ -78,7 +79,7 @@ static int stack_allocate(coroutine *coro, size_t stack_pages)
 }
 
 
-static void stack_free(coroutine *coro)
+static void stack_free(coroutine_t *coro)
 {
     if (NULL != coro->context.uc_stack.ss_sp) {
         (void) munmap(coro->context.uc_stack.ss_sp,
@@ -87,9 +88,10 @@ static void stack_free(coroutine *coro)
 }
 
 
-coroutine *coroutine_create(coroutine_function *function, size_t stack_pages)
+coroutine_t *coroutine_create(coroutine_function_t *function,
+    size_t stack_pages)
 {
-    coroutine *coro;
+    coroutine_t *coro;
 
     coro = calloc(1, sizeof(*coro));
     if (NULL == coro) {
@@ -116,7 +118,7 @@ fail:
 }
 
 
-void coroutine_destroy(coroutine *coro)
+void coroutine_destroy(coroutine_t *coro)
 {
     if (NULL != coro) {
         stack_free(coro);
@@ -125,13 +127,13 @@ void coroutine_destroy(coroutine *coro)
 }
 
 
-bool coroutine_ended(const coroutine *coro)
+bool coroutine_ended(const coroutine_t *coro)
 {
     return (NULL == coro) || !!(coro->status & COROUTINE_ENDED);
 }
 
 
-void *coroutine_resume(coroutine *coro, void *value)
+void *coroutine_resume(coroutine_t *coro, void *value)
 {
     if (NULL == coro) {
         return NULL;
@@ -142,7 +144,7 @@ void *coroutine_resume(coroutine *coro, void *value)
 }
 
 
-void *coroutine_yield(coroutine *coro, void *value)
+void *coroutine_yield(coroutine_t *coro, void *value)
 {
     if (NULL == coro) {
         return NULL;

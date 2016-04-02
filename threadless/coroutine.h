@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 /** Opaque coroutine type */
-typedef struct coroutine coroutine;
+typedef struct coroutine coroutine_t;
 
 /** Coroutine function type
  * @param[in,out] coro coroutine
@@ -20,7 +20,7 @@ typedef struct coroutine coroutine;
  * @returns user-defined pointer (which should correspond to value(s) passed to
  *          coroutine_yield())
  */
-typedef void *(coroutine_function)(coroutine *coro, void *data);
+typedef void *(coroutine_function_t)(coroutine_t *coro, void *data);
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,14 +34,15 @@ extern "C" {
  * @post upon success, return value may be passed to coroutine_resume()
  * @post upon success, return value must be passed to coroutine_destroy()
  */
-coroutine *coroutine_create(coroutine_function *function, size_t stack_pages);
+coroutine_t *coroutine_create(coroutine_function_t *function,
+    size_t stack_pages);
 
 /** Destroy a coroutine
  * @param[in,out] coro coroutine to destroy
  * @pre @p coro must have been returned by coroutine_create()
  * @post @p coro may no longer be used
  */
-void coroutine_destroy(coroutine *coro);
+void coroutine_destroy(coroutine_t *coro);
 
 /** Test if a coroutine has ended
  * @param[in] coro coroutine to test
@@ -49,7 +50,7 @@ void coroutine_destroy(coroutine *coro);
  * @retval false coroutine has not ended
  * @pre @p coro must have been returned by coroutine_create()
  */
-bool coroutine_ended(const coroutine *coro);
+bool coroutine_ended(const coroutine_t *coro);
 
 /** Resume a coroutine, passing a value to coroutine_yield()
  * @param[in,out] coro  coroutine to resume
@@ -58,7 +59,7 @@ bool coroutine_ended(const coroutine *coro);
  * @returns value passed by @p coro to coroutine_yield()
  * @pre @p coro must have been returned by coroutine_create()
  */
-void *coroutine_resume(coroutine *coro, void *value);
+void *coroutine_resume(coroutine_t *coro, void *value);
 
 /** Yield from a coroutine, passing a value to coroutine_resume()
  * @param[in,out] coro  coroutine to yield from
@@ -66,7 +67,7 @@ void *coroutine_resume(coroutine *coro, void *value);
  * @returns value passed by @p coro to coroutine_resume()
  * @pre @p coro must have been returned by coroutine_create()
  */
-void *coroutine_yield(coroutine *coro, void *value);
+void *coroutine_yield(coroutine_t *coro, void *value);
 
 #ifdef __cplusplus
 }
