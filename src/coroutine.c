@@ -3,6 +3,10 @@
  * Licensed under the MIT License. See LICENSE file in the project root for
  * full license information.
  */
+/** @file
+ * coroutine interface implementation
+ * @author Justin R. Cutler <justin.r.cutler@gmail.com>
+ */
 
 /* stack_t (in ucontext.h) */
 #define _BSD_SOURCE

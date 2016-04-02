@@ -3,6 +3,10 @@
  * Licensed under the MIT License. See LICENSE file in the project root for
  * full license information.
  */
+/** @file
+ * coroutine interface definition
+ * @author Justin R. Cutler <justin.r.cutler@gmail.com>
+ */
 #ifndef THREADLESS_COROUTINE_H
 #define THREADLESS_COROUTINE_H
 
