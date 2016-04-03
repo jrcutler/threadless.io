@@ -13,6 +13,8 @@
 /* EXIT_SUCCESS, EXIT_FAILURE */
 #include <stdlib.h>
 
+/* allocator_t, allocator_get_default, allocator_destroy */
+#include <threadless/coroutine.h>
 /* ... */
 #include <threadless/coroutine.h>
 
@@ -54,19 +56,19 @@ static void *output_coroutine(coroutine_t *coro, void *data)
 }
 
 
-static int run(void)
+static int run(allocator_t *allocator)
 {
     int error = -1;
     coroutine_t *fibonacci = NULL;
     coroutine_t *output = NULL;
 
-    fibonacci = coroutine_create(fibonacci_generator, 1);
+    fibonacci = coroutine_create(allocator, fibonacci_generator, 4096);
     if (NULL == fibonacci) {
         perror("coroutine_create");
         goto fail;
     }
 
-    output = coroutine_create(output_coroutine, 1);
+    output = coroutine_create(allocator, output_coroutine, 4096);
     if (NULL == output) {
         perror("coroutine_create");
         goto fail;
@@ -91,11 +93,14 @@ fail:
 int main(int argc, char *argv[])
 {
     int error;
+    allocator_t *allocator = allocator_get_default();
 
     (void) argc;
     (void) argv;
 
-    error = run();
+    error = run(allocator);
+
+    allocator_destroy(allocator);
 
     return !error ? EXIT_SUCCESS : EXIT_FAILURE;
 }

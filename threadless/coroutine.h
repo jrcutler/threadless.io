@@ -15,6 +15,9 @@
 /* NULL, size_t */
 #include <stddef.h>
 
+/* allocator_t */
+#include <threadless/allocator.h>
+
 /** Opaque coroutine type */
 typedef struct coroutine coroutine_t;
 
@@ -31,15 +34,16 @@ extern "C" {
 #endif /* __cplusplus */
 
 /** Create a coroutine
- * @param function    function to run in coroutine
- * @param stack_pages number of pages to map for coroutine stack
+ * @param[in,out] allocator  allocator to use to create/destroy memory
+ * @param         function   function to run in coroutine
+ * @param         stack_size coroutine stack size
  * @retval non-NULL new coroutine
  * @retval NULL     error (check @c errno for reason)
  * @post upon success, return value may be passed to coroutine_resume()
  * @post upon success, return value must be passed to coroutine_destroy()
  */
-coroutine_t *coroutine_create(coroutine_function_t *function,
-    size_t stack_pages);
+coroutine_t *coroutine_create(allocator_t *allocator,
+    coroutine_function_t *function, size_t stack_size);
 
 /** Destroy a coroutine
  * @param[in,out] coro coroutine to destroy

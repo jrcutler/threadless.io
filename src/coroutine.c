@@ -13,15 +13,11 @@
 
 /* errno, ENOMEM */
 #include <errno.h>
-/* calloc, free */
-#include <stdlib.h>
+/* memset */
+#include <string.h>
 
-/* malloc, munmap, PROT_*, MAP_* */
-#include <sys/mman.h>
 /* ucontext_t, getcontext, makecontext, swapcontext */
 #include <ucontext.h>
-/* sysconf, _SC_PAGE_SIZE */
-#include <unistd.h>
 
 /* ... */
 #include <threadless/coroutine.h>
@@ -33,6 +29,7 @@ enum {
 
 
 struct coroutine {
+    allocator_t *allocator;
     ucontext_t  context;
     ucontext_t  caller;
     void        *data;
@@ -58,55 +55,28 @@ static void coroutine_entry_point(coroutine_t *c,
 }
 
 
-static int stack_allocate(coroutine_t *coro, size_t stack_pages)
+coroutine_t *coroutine_create(allocator_t *allocator,
+    coroutine_function_t *function, size_t stack_size)
 {
-    int error = -1;
-    size_t page_size = sysconf(_SC_PAGE_SIZE);
-    size_t length = page_size * stack_pages;
-    void *mapping = MAP_FAILED;
+    coroutine_t *coro = NULL;
+    size_t alloc_size = sizeof(*coro) + stack_size;
 
-    if ((length / page_size) == stack_pages) {
-        mapping = mmap(NULL, length, PROT_READ|PROT_WRITE,
-            MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-    } else {
+    if (alloc_size < stack_size) {
         /* integer overflow */
         errno = ENOMEM;
+        goto fail;
     }
 
-    if (MAP_FAILED != mapping) {
-        coro->context.uc_stack.ss_sp = mapping;
-        coro->context.uc_stack.ss_size = length;
-        error = 0;
-    }
-
-    return error;
-}
-
-
-static void stack_free(coroutine_t *coro)
-{
-    if (NULL != coro->context.uc_stack.ss_sp) {
-        (void) munmap(coro->context.uc_stack.ss_sp,
-            coro->context.uc_stack.ss_size);
-    }
-}
-
-
-coroutine_t *coroutine_create(coroutine_function_t *function,
-    size_t stack_pages)
-{
-    coroutine_t *coro;
-
-    coro = calloc(1, sizeof(*coro));
+    coro = allocator_malloc(allocator, alloc_size);
     if (NULL == coro) {
         goto fail;
     }
 
+    memset(coro, 0, alloc_size);
+    coro->allocator = allocator;
     (void) getcontext(&coro->context);
-
-    if (stack_allocate(coro, stack_pages)) {
-        goto fail;
-    }
+    coro->context.uc_stack.ss_sp = coro + 1;
+    coro->context.uc_stack.ss_size = stack_size;
 
     makecontext(&coro->context, (void (*)(void)) coroutine_entry_point, 2,
         coro, function);
@@ -114,9 +84,7 @@ coroutine_t *coroutine_create(coroutine_function_t *function,
     return coro;
 
 fail:
-    if (NULL != coro) {
-        coroutine_destroy(coro);
-    }
+    coroutine_destroy(coro);
 
     return NULL;
 }
@@ -124,9 +92,8 @@ fail:
 
 void coroutine_destroy(coroutine_t *coro)
 {
-    if (NULL != coro) {
-        stack_free(coro);
-        free(coro);
+    if (NULL != coro && NULL != coro->allocator) {
+        allocator_free(coro->allocator, coro);
     }
 }
 
