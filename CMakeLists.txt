@@ -9,6 +9,9 @@ add_library (coroutine src/coroutine.c)
 target_include_directories (coroutine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries (coroutine LINK_PUBLIC allocation)
 
-add_executable (test-coroutine test/coroutine.c src/default_allocator.c)
+add_library (default_allocator src/default_allocator.c)
+target_include_directories (default_allocator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable (test-coroutine test/coroutine.c)
 target_include_directories (coroutine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries (test-coroutine LINK_PUBLIC coroutine)
+target_link_libraries (test-coroutine LINK_PUBLIC coroutine default_allocator)
