@@ -16,10 +16,12 @@
 /* EXIT_SUCCESS, EXIT_FAILURE */
 #include <stdlib.h>
 
-/* allocator_t, allocator_get_default, allocator_destroy */
+/* allocator_t, allocator_destroy */
+#include <threadless/allocation.h>
+/* default_allocator_get */
 #include <threadless/default_allocator.h>
 #ifdef HAVE_MMAP
-/* allocator_get_mmap */
+/* mmap_allocator_get */
 # include <threadless/mmap_allocator.h>
 #endif
 /* ... */
@@ -106,14 +108,14 @@ int main(int argc, char *argv[])
     (void) argv;
 
     printf("default allocator:\n");
-    allocator = allocator_get_default();
+    allocator = default_allocator_get();
     error = run(allocator);
     allocator_destroy(allocator);
 
 #ifdef HAVE_MMAP
     if (!error) {
         printf("mmap allocator:\n");
-        allocator = allocator_get_mmap();
+        allocator = mmap_allocator_get();
         error = run(allocator);
         allocator_destroy(allocator);
     }

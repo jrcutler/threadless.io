@@ -20,7 +20,7 @@ extern "C" {
 /** Get @c mmap(3) allocator instance
  * @returns default allocator
  */
-allocator_t *allocator_get_mmap(void);
+allocator_t *mmap_allocator_get(void);
 
 #ifdef __cplusplus
 }

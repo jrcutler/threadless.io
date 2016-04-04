@@ -133,7 +133,7 @@ static allocator_t mmap_allocator = {
 };
 
 
-allocator_t *allocator_get_mmap(void)
+allocator_t *mmap_allocator_get(void)
 {
     return &mmap_allocator;
 }

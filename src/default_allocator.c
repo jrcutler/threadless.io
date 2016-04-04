@@ -48,7 +48,7 @@ static allocator_t default_allocator = {
 };
 
 
-allocator_t *allocator_get_default(void)
+allocator_t *default_allocator_get(void)
 {
     return &default_allocator;
 }
