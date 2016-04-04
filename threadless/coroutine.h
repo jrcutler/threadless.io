@@ -16,7 +16,7 @@
 #include <stddef.h>
 
 /* allocator_t */
-#include <threadless/allocator.h>
+#include <threadless/allocation.h>
 
 /** Opaque coroutine type */
 typedef struct coroutine coroutine_t;

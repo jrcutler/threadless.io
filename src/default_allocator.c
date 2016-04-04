@@ -7,36 +7,31 @@
  * default allocator implementation
  * @author Justin R. Cutler <justin.r.cutler@gmail.com>
  */
-/* errno, ENOMEM */
-#include <errno.h>
+
 /* realloc */
 #include <stdlib.h>
 
 /* ... */
-#include <threadless/allocator.h>
+#include <threadless/default_allocator.h>
 
 
-#ifndef SIZE_MAX
-# define SIZE_MAX ((size_t)-1)
-#endif
-
-#define SQRT_SIZE_MAX_PLUS_1 ((size_t)1 << (sizeof(size_t) * 4))
-
-
-static void *default_allocate(allocator_t *allocator, void *ptr, size_t nmemb,
-    size_t size)
+static int default_allocate(allocation_t *allocation, size_t size)
 {
-    /* ignore allocator */
-    (void) allocator;
-    /* test for multiplication overflow */
-    if (((nmemb >= SQRT_SIZE_MAX_PLUS_1) || (size >= SQRT_SIZE_MAX_PLUS_1)) &&
-        (nmemb != 0) && ((SIZE_MAX / nmemb) < size)) {
-        /* overflow detected */
-        errno = ENOMEM;
-        return NULL;
-    }
+    void *new_memory;
+
     /* perform allocator action */
-    return realloc(ptr, size * nmemb);
+    new_memory = realloc(allocation->memory, size);
+
+    if ((NULL == new_memory) && (size != 0)) {
+        /* realloc failed */
+        return -1;
+    }
+
+    /* update allocation */
+    allocation->memory = new_memory;
+    allocation->size = size;
+
+    return 0;
 }
 
 

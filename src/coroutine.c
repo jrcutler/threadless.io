@@ -19,6 +19,8 @@
 /* ucontext_t, getcontext, makecontext, swapcontext */
 #include <ucontext.h>
 
+/* allocator_t allocation_t, allocation_init, allocation_realloc_array */
+#include <threadless/allocation.h>
 /* ... */
 #include <threadless/coroutine.h>
 
@@ -29,11 +31,11 @@ enum {
 
 
 struct coroutine {
-    allocator_t *allocator;
-    ucontext_t  context;
-    ucontext_t  caller;
-    void        *data;
-    int         status;
+    allocation_t allocation;
+    ucontext_t   context;
+    ucontext_t   caller;
+    void         *data;
+    int          status;
 };
 
 
@@ -67,13 +69,15 @@ coroutine_t *coroutine_create(allocator_t *allocator,
         goto fail;
     }
 
-    coro = allocator_malloc(allocator, alloc_size);
-    if (NULL == coro) {
+    allocation_t allocation;
+    allocation_init(&allocation, allocator);
+    if (allocation_realloc_array(&allocation, 1, alloc_size)) {
         goto fail;
     }
 
+    coro = allocation.memory;
     memset(coro, 0, alloc_size);
-    coro->allocator = allocator;
+    coro->allocation = allocation;
     (void) getcontext(&coro->context);
     coro->context.uc_stack.ss_sp = coro + 1;
     coro->context.uc_stack.ss_size = stack_size;
@@ -92,8 +96,9 @@ fail:
 
 void coroutine_destroy(coroutine_t *coro)
 {
-    if (NULL != coro && NULL != coro->allocator) {
-        allocator_free(coro->allocator, coro);
+    if (NULL != coro) {
+        allocation_t allocation = coro->allocation;
+        allocation_free(&allocation);
     }
 }
 

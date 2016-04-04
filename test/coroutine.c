@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 /* allocator_t, allocator_get_default, allocator_destroy */
-#include <threadless/allocator.h>
+#include <threadless/default_allocator.h>
 /* ... */
 #include <threadless/coroutine.h>
 
