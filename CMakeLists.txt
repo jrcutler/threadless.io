@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
-include (CheckFunctionExists)
-include (CheckSymbolExists)
+include(CheckFunctionExists)
+include(CheckSymbolExists)
 
 check_function_exists(mmap HAVE_MMAP)
 if(HAVE_MMAP)
@@ -16,18 +16,18 @@ set(CMAKE_C_FLAGS "-Wall -Wextra -pedantic -Werror -std=c99")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library (allocation src/allocation.c)
+add_library(allocation src/allocation.c)
 
-add_library (coroutine src/coroutine.c)
-target_link_libraries (coroutine LINK_PUBLIC allocation)
+add_library(coroutine src/coroutine.c)
+target_link_libraries(coroutine LINK_PUBLIC allocation)
 
-add_library (default_allocator src/default_allocator.c)
+add_library(default_allocator src/default_allocator.c)
 set(ALLOCATORS default_allocator)
 
 if(HAVE_MMAP)
-    add_library (mmap_allocator src/mmap_allocator.c)
+    add_library(mmap_allocator src/mmap_allocator.c)
     set(ALLOCATORS ${ALLOCATORS} mmap_allocator)
 endif()
 
-add_executable (test-coroutine test/coroutine.c)
-target_link_libraries (test-coroutine LINK_PUBLIC coroutine ${ALLOCATORS})
+add_executable(test-coroutine test/coroutine.c)
+target_link_libraries(test-coroutine LINK_PUBLIC coroutine ${ALLOCATORS})
