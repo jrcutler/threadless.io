@@ -1,0 +1,4 @@
+#cmakedefine HAVE_MMAP
+#cmakedefine HAVE_MREMAP
+#cmakedefine HAVE_MAP_ANONYMOUS
+#cmakedefine HAVE_MAP_ANON

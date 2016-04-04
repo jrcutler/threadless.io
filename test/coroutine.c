@@ -8,6 +8,9 @@
  * @author Justin R. Cutler <justin.r.cutler@gmail.com>
  */
 
+/* HAVE_* */
+#include "config.h"
+
 /* printf, perror */
 #include <stdio.h>
 /* EXIT_SUCCESS, EXIT_FAILURE */
@@ -15,6 +18,10 @@
 
 /* allocator_t, allocator_get_default, allocator_destroy */
 #include <threadless/default_allocator.h>
+#ifdef HAVE_MMAP
+/* allocator_get_mmap */
+# include <threadless/mmap_allocator.h>
+#endif
 /* ... */
 #include <threadless/coroutine.h>
 
@@ -93,14 +100,24 @@ fail:
 int main(int argc, char *argv[])
 {
     int error;
-    allocator_t *allocator = allocator_get_default();
+    allocator_t *allocator;
 
     (void) argc;
     (void) argv;
 
+    printf("default allocator:\n");
+    allocator = allocator_get_default();
     error = run(allocator);
-
     allocator_destroy(allocator);
+
+#ifdef HAVE_MMAP
+    if (!error) {
+        printf("mmap allocator:\n");
+        allocator = allocator_get_mmap();
+        error = run(allocator);
+        allocator_destroy(allocator);
+    }
+#endif
 
     return !error ? EXIT_SUCCESS : EXIT_FAILURE;
 }
