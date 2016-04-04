@@ -4,7 +4,7 @@
  * full license information.
  */
 /** @file
- * allocator interface definition
+ * default allocator interface definition
  * @author Justin R. Cutler <justin.r.cutler@gmail.com>
  */
 #ifndef THREADLESS_DEFAULT_ALLOCATOR_H
