@@ -74,6 +74,8 @@ static int mmap_allocate(allocation_t *allocation, size_t size)
     static size_t page_size = 0;
     static size_t page_mask = 0;
     void *new_memory = MAP_FAILED;
+    size_t old_size = allocation->size;
+    size_t new_size = size;
 
     if (!page_size) {
         /* get page size */
@@ -88,23 +90,25 @@ static int mmap_allocate(allocation_t *allocation, size_t size)
         }
     }
 
-    /* round size up to multiple of page_size */
-    size = (size + page_size - 1) & ~page_mask;
+    /* round sizes up to multiple of page_size */
+    old_size = (old_size + page_size - 1) & ~page_mask;
+    new_size = (new_size + page_size - 1) & ~page_mask;
 
-    /* no action required */
-    if (size == allocation->size) {
+    /* no mapping action required */
+    if (old_size == new_size) {
+        allocation->size = size;
         return 0;
     }
 
-    if (0 == size) {
-        if (NULL != allocation->memory && 0 != allocation->size) {
-            (void)munmap(allocation->memory, allocation->size);
+    if (0 == new_size) {
+        if (NULL != allocation->memory && 0 != old_size) {
+            (void) munmap(allocation->memory, old_size);
         }
         new_memory = NULL;
-    } else if (0 == allocation->size) {
-        new_memory = do_mmap(size);
+    } else if (0 == old_size) {
+        new_memory = do_mmap(new_size);
     } else {
-        new_memory = do_mremap(allocation->memory, allocation->size, size);
+        new_memory = do_mremap(allocation->memory, old_size, new_size);
     }
 
     if (MAP_FAILED == new_memory) {
