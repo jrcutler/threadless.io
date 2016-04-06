@@ -57,12 +57,18 @@ static void *do_mremap(void *memory, size_t old_size, size_t new_size)
 #ifdef HAVE_MREMAP
     new_memory = mremap(memory, old_size, new_size, MREMAP_MAYMOVE);
 #else
-    /* slow remap: mmap + copy + munmap */
-    size_t copy_size = (new_size < old_size) ? new_size : old_size;
-    new_memory = do_mmap(new_size);
-    if (MAP_FAILED != new_memory) {
-        memcpy(new_memory, memory, copy_size);
-        (void) munmap(memory, old_size);
+    if (old_size < new_size) {
+        /* slow remap: mmap + copy + munmap */
+        size_t copy_size = (new_size < old_size) ? new_size : old_size;
+        new_memory = do_mmap(new_size);
+        if (MAP_FAILED != new_memory) {
+            memcpy(new_memory, memory, copy_size);
+            (void) munmap(memory, old_size);
+        }
+    } else {
+        /* shrink via munmap */
+        (void) munmap((char *)memory + new_size, old_size - new_size);
+        new_memory = memory;
     }
 #endif
     return new_memory;
