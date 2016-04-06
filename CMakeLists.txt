@@ -29,5 +29,7 @@ if(HAVE_MMAP)
     set(ALLOCATORS ${ALLOCATORS} mmap_allocator)
 endif()
 
+add_executable(test-allocation test/allocation.c)
+target_link_libraries(test-allocation LINK_PUBLIC allocation ${ALLOCATORS})
 add_executable(test-coroutine test/coroutine.c)
 target_link_libraries(test-coroutine LINK_PUBLIC coroutine ${ALLOCATORS})
