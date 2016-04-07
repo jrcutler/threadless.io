@@ -11,6 +11,8 @@
 /* HAVE_* */
 #include "config.h"
 
+/* errno, EINVAL */
+#include <errno.h>
 /* printf, perror */
 #include <stdio.h>
 /* EXIT_SUCCESS, EXIT_FAILURE */
@@ -26,6 +28,18 @@
 #include <threadless/allocation.h>
 
 
+static int test_allocation(allocation_t *allocation, size_t size)
+{
+    int error = allocation_realloc_array(allocation, 1, size);
+    if (!error && allocation->size != size) {
+        /* bad size */
+        errno = EINVAL;
+        error = -1;
+    }
+    return error;
+}
+
+
 static int run(allocator_t *allocator)
 {
     int error = 0;
@@ -35,16 +49,23 @@ static int run(allocator_t *allocator)
     allocation_init(&allocation, allocator);
 
     for (size = 1; !error && size < (1 << 22); size = size << 1) {
-        error = allocation_realloc_array(&allocation, 1, size);
+        error = test_allocation(&allocation, size);
+        
     }
 
     if (!error) {
         size_t big = 1UL << (sizeof(size_t) * 4);
+        size = allocation.size;
         error = !allocation_realloc_array(&allocation, big, big);
+        if (!error && allocation.size != size) {
+            /* bad size */
+            errno = EINVAL;
+            error = -1;
+        }
     }
 
     for (size = 1 << 22; !error && size; size = size >> 1) {
-        error = allocation_realloc_array(&allocation, 1, size);
+        error = test_allocation(&allocation, size);
     }
 
     if (!error) {
