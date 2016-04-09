@@ -35,7 +35,7 @@ static int default_allocate(allocation_t *allocation, size_t size)
 }
 
 
-static void default_destory(allocator_t *allocator)
+static void default_destroy(allocator_t *allocator)
 {
     /* ignore allocator */
     (void) allocator;
@@ -44,7 +44,7 @@ static void default_destory(allocator_t *allocator)
 
 static allocator_t default_allocator = {
     .allocate = default_allocate,
-    .destroy = default_destory,
+    .destroy = default_destroy,
 };
 
 
