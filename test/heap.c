@@ -30,7 +30,12 @@
 #include <threadless/heap.h>
 
 
-const int data[] = { 4 /* duplicate */, 1, 9, 2, 8, 4, 0, 5, 3, 6, 7, 99 };
+const int data[] = {
+    4 /* duplicate (remove) */,
+    6 /* duplicate (replace with 1) */,
+    9, 2, 8, 4, 0, 5, 3, 6, 7,
+    99 /* remove */,
+};
 const size_t data_count = sizeof(data) / sizeof(data[0]);
 
 
@@ -58,7 +63,7 @@ static int run(allocator_t *allocator)
     heap_node_t *node;
 
     allocation_init(&alloc, allocator);
-    error = allocation_realloc_array(&alloc, data_count, sizeof(*values));
+    error = allocation_realloc_array(&alloc, data_count + 1, sizeof(*values));
     if (error) {
         return error;
     }
@@ -74,8 +79,13 @@ static int run(allocator_t *allocator)
 
     /* remove from middle */
     heap_remove(&(values[0].node));
+
     /* remove from end */
     heap_remove(&(values[data_count - 1].node));
+
+    /* replace */
+    values[data_count].value = 1;
+    heap_replace(&(values[1].node), &(values[data_count].node));
 
     /* pull values out of heap (minimum first) */
     while (NULL != (node = heap_pop(&heap))) {

@@ -84,6 +84,27 @@ int heap_push(heap_t *heap, heap_node_t *node)
 }
 
 
+void heap_replace(heap_node_t *old, heap_node_t *node)
+{
+    heap_t *heap = old->heap;
+    size_t pos = old->index;
+    heap_node_t **storage = heap->allocation.memory;
+
+    /* disassociate old node from heap */
+    old->heap = NULL;
+    old->index = 0;
+
+    /* place new node in heap */
+    node->heap = heap;
+    node->index = pos;
+    storage[pos] = node;
+
+    /* restore heap invariant */
+    sift_up(heap, pos, heap->count);
+    sift_down(heap, 0, pos);
+}
+
+
 void heap_remove(heap_node_t *node)
 {
     heap_t *heap = node->heap;

@@ -84,6 +84,15 @@ static inline heap_node_t *heap_peek(const heap_t *heap)
  */
 int heap_push(heap_t *heap, heap_node_t *node);
 
+/** Replace an existing @p old node in a heap with a new @p node
+ * @param[in,out] old  old node
+ * @param[in,out] node new node
+ * @pre @p old must be in a heap
+ * @post @p old is no longer in a heap
+ * @post @p node is in the heap that previously contained @p old
+ */
+void heap_replace(heap_node_t *old, heap_node_t *node);
+
 /** Remove an arbitrary @p node from its heap
  * @param[in,out] node node
  * @pre @p node must be in a heap
