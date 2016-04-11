@@ -29,6 +29,13 @@ enum {
     COROUTINE_ENDED = 1,
 };
 
+typedef struct deferred deferred_t;
+struct deferred {
+    allocation_t allocation;
+    coroutine_deferred_function_t *function;
+    void *data;
+    deferred_t *next;
+};
 
 struct coroutine {
     allocation_t allocation;
@@ -36,6 +43,7 @@ struct coroutine {
     ucontext_t   caller;
     void         *data;
     int          status;
+    deferred_t   *deferred;
 };
 
 
@@ -78,6 +86,7 @@ coroutine_t *coroutine_create(allocator_t *allocator,
     coro = allocation.memory;
     memset(coro, 0, alloc_size);
     coro->allocation = allocation;
+    coro->deferred = NULL;
     (void) getcontext(&coro->context);
     coro->context.uc_stack.ss_sp = coro + 1;
     coro->context.uc_stack.ss_size = stack_size;
@@ -94,9 +103,22 @@ fail:
 }
 
 
+static void coroutine_run_deferred(coroutine_t *coro)
+{
+    deferred_t *deferred = coro->deferred;
+    while (NULL != deferred) {
+        allocation_t allocation = deferred->allocation;
+        deferred->function(deferred->data);
+        deferred = deferred->next;
+        allocation_free(&allocation);
+    }
+}
+
+
 void coroutine_destroy(coroutine_t *coro)
 {
     if (NULL != coro) {
+        coroutine_run_deferred(coro);
         allocation_t allocation = coro->allocation;
         allocation_free(&allocation);
     }
@@ -128,4 +150,31 @@ void *coroutine_yield(coroutine_t *coro, void *value)
     coro->data = value;
     (void) swapcontext(&coro->context, &coro->caller);
     return coro->data;
+}
+
+
+int coroutine_defer(coroutine_t *coro, coroutine_deferred_function_t *function,
+    void *data)
+{
+    int error;
+    deferred_t *deferred = NULL;
+    allocation_t allocation;
+
+    /* allocate memory */
+    allocation_init(&allocation, coro->allocation.allocator);
+    error = allocation_realloc_array(&allocation, 1, sizeof(*deferred));
+
+    if (!error) {
+       /* initialize deferred work */
+        deferred = allocation.memory;
+        deferred->allocation = allocation;
+        deferred->function = function;
+        deferred->data = data;
+
+        /* push deferred work to front of list */
+        deferred->next = coro->deferred;
+        coro->deferred = deferred;
+    }
+
+    return error;
 }

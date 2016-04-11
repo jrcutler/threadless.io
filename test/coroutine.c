@@ -52,9 +52,22 @@ static void *fibonacci_generator(coroutine_t *coro, void *data)
 }
 
 
+static void deferred_puts(void *data)
+{
+    puts(data);
+}
+
+
 static void *output_coroutine(coroutine_t *coro, void *data)
 {
     size_t *value = data;
+
+    if (coroutine_defer(coro, deferred_puts, "deferred output 0")) {
+        return NULL;
+    }
+    if (coroutine_defer(coro, deferred_puts, "deferred output 1")) {
+        return NULL;
+    }
 
     while (NULL != value) {
         printf("%zu\n", *value);

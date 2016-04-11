@@ -29,6 +29,11 @@ typedef struct coroutine coroutine_t;
  */
 typedef void *(coroutine_function_t)(coroutine_t *coro, void *data);
 
+/** Coroutine deferred function type
+ * @param[in,out] data user-defined data
+ */
+typedef void (coroutine_deferred_function_t)(void *data);
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -76,6 +81,18 @@ void *coroutine_resume(coroutine_t *coro, void *value);
  * @pre @p coro must have been returned by coroutine_create()
  */
 void *coroutine_yield(coroutine_t *coro, void *value);
+
+/** Defer a function call until coroutine termination
+ * @param[in,out] coro     coroutine
+ * @param         function function to call when @p coro terminates
+ * @param         data     user-defined point to pass to @p function
+ * @retval 0  success
+ * @retval -1 error
+ * @post @p function will be called with @p data when @p coro terminates
+ * @note Registered functions will be called in reverse order of registration
+ */
+int coroutine_defer(coroutine_t *coro, coroutine_deferred_function_t *function,
+    void *data);
 
 #ifdef __cplusplus
 }
