@@ -86,6 +86,7 @@ coroutine_t *coroutine_create(allocator_t *allocator,
     coro = allocation.memory;
     memset(coro, 0, alloc_size);
     coro->allocation = allocation;
+    coro->status = 0;
     coro->deferred = NULL;
     (void) getcontext(&coro->context);
     coro->context.uc_stack.ss_sp = coro + 1;
